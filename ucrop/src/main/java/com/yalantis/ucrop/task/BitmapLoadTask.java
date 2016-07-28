@@ -26,9 +26,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+
 import okio.BufferedSource;
 import okio.Okio;
 import okio.Sink;
@@ -218,6 +219,7 @@ public class BitmapLoadTask extends AsyncTask<Void, Void, BitmapLoadTask.BitmapW
 
     private void downloadFile(@NonNull Uri inputUri, @Nullable Uri outputUri) throws NullPointerException, IOException {
         Log.d(TAG, "downloadFile");
+        String tag = "uCrop";
 
         if (outputUri == null) {
             throw new NullPointerException("Output Uri is null - cannot download image");
@@ -230,6 +232,7 @@ public class BitmapLoadTask extends AsyncTask<Void, Void, BitmapLoadTask.BitmapW
         Response response = null;
         try {
             Request request = new Request.Builder()
+                    .tag(tag)
                     .url(inputUri.toString())
                     .build();
             response = client.newCall(request).execute();
@@ -248,7 +251,7 @@ public class BitmapLoadTask extends AsyncTask<Void, Void, BitmapLoadTask.BitmapW
             if (response != null) {
                 BitmapLoadUtils.close(response.body());
             }
-            client.dispatcher().cancelAll();
+            client.getDispatcher().cancel(tag);
 
             // swap uris, because input image was downloaded to the output destination
             // (cropped image will override it later)
